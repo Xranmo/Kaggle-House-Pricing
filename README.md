@@ -1,4 +1,3 @@
-# Kaggle-House-Pricing
 [https://www.kaggle.com/c/house-prices-advanced-regression-techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques)
 
 ### 0、模型准备
@@ -160,8 +159,8 @@ if X_test.shape[1]==X_train.shape[1]:
 ```
 - 实际成绩13.971
 
-###一、EDA
-#####1.1 目标值的偏态检测
+### 一、EDA
+##### 1.1 目标值的偏态检测
 ```
 #重新进行EDA探索
 
@@ -177,7 +176,7 @@ print('峰度：%f'%df.SalePrice.kurt())       #标准正太分布为1
 ```
 ![image.png](https://upload-images.jianshu.io/upload_images/18032205-83a24ac36ca71b45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 （因为已经做过对数处理了）
-#####1.2 相关性检测
+##### 1.2 相关性检测
 ```
 #数据相关性
 corrmat=df.corr()
@@ -201,7 +200,7 @@ sns.pairplot(df[['SalePrice', 'OverallQual', 'GrLivArea', 'GarageCars', 'TotalBs
 ```
 ![image.png](https://upload-images.jianshu.io/upload_images/18032205-8e6a52fd35158274.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 - 从上面的对图可以看出是存在离群点（异常点的），所以有必要把离群点筛选出来
-#####1.3 离群点检测
+##### 1.3 离群点检测
 ```
 #检测异常点,这个只是单纯靠样本分布的间隔来检测
 
@@ -368,7 +367,7 @@ print(df.shape)
 ![image.png](https://upload-images.jianshu.io/upload_images/18032205-100b3367f5f3cef8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 - 实际成绩由0.13971变为0.13634
 
-###二、特征工程
+### 二、特征工程
 ```
 # 合并train和test，但同时要防止leak
 
@@ -378,7 +377,7 @@ df_feature=pd.concat([df_new,df_test],axis=0)
 df_feature=df_feature[df_new.columns]   #columns被打乱，重新排一下
 df_feature
 ```
-#####2.1 将不属于数值型的特征转化为字符串
+##### 2.1 将不属于数值型的特征转化为字符串
 ```
 df_feature.dtypes[df_feature.dtypes!=object]  #依次对照，检查其是否不应该为数值型
 ```
@@ -388,7 +387,7 @@ df_feature['MSSubClass'] = df_feature['MSSubClass'].apply(str)
 df_feature['YrSold'] = df_feature['YrSold'].astype(str)
 df_feature['MoSold'] = df_feature['MoSold'].astype(str)
 ```
-#####2.2 缺失值填充
+##### 2.2 缺失值填充
 ```
 #2.2 缺失值填充
 df_feature.isnull().any()[df_feature.isnull().any()]   #查看样本说明确定那些是允许缺失的特征（该样本没有这项特征）
@@ -570,7 +569,7 @@ df_feature['SaleType']=feature_missing(df_feature,feature='SaleType',method='mod
 ```
 - 实际成绩由0.13634降为0.13596，说明缺失值填充对模型精度提高很有限，而且在填充过程中你并不能确定哪一种方法是最好的。
 
-#####2.3 数据偏度矫正
+##### 2.3 数据偏度矫正
 ```
 #数值型数据列偏度矫正
 
@@ -581,7 +580,7 @@ highskew_index=df_feature3[numeric_features].skew()[df_feature3[numeric_features
 for i in highskew_index:
     df_feature3[i] = boxcox1p(df_feature3[i], boxcox_normmax(df_feature3[i] + 1))
 ```
-#####2.4 特征删除
+##### 2.4 特征删除
 ```
 #特征删除
 df_feature3.Utilities.value_counts()
@@ -594,7 +593,7 @@ df_feature3.MiscFeature.value_counts()
 #上面几个特征缺失率都太高了
 df_feature5=df_feature3.drop(['Utilities', 'Street', 'PoolQC','MiscFeature', 'Alley', 'Fence'], axis=1)
 ```
-#####2.5 融合生成新特征（其实应该最后来做这个步骤）
+##### 2.5 融合生成新特征（其实应该最后来做这个步骤）
 ```
 #融合生成新特征
 #根据直觉进行的融合
@@ -629,7 +628,7 @@ df_feature6['Total_porch_sf'] = (df_feature6['OpenPorchSF'] + df_feature6['3SsnP
                               df_feature6['EnclosedPorch'] + df_feature6['ScreenPorch'] +
                               df_feature6['WoodDeckSF'])
 ```
-#####2.6 简化特征（应该在特征融合之间）
+##### 2.6 简化特征（应该在特征融合之间）
 ```
 #简化特征，对于某些分布单调（比如100个数据中有99个的数值是0.9，另1个是0.1）的数字型数据列，进行01取值处理。
 #要确保其他字段没有包含这部分信息，比如有一个字段专门表示有无pool的，那就不用额外生成
@@ -641,7 +640,7 @@ df_feature7['hasgarage'] = df_feature7['GarageArea'].apply(lambda x: 1 if x > 0 
 df_feature7['hasbsmt'] = df_feature7['TotalBsmtSF'].apply(lambda x: 1 if x > 0 else 0)
 df_feature7['hasfireplace'] = df_feature7['Fireplaces'].apply(lambda x: 1 if x > 0 else 0)
 ```
-#####2.7 删除单一特征
+##### 2.7 删除单一特征
 ```
 #get_dummies并删除单一特征（比如某个值出现了99%以上）的特征
 print("before get_dummies:",df_feature7.shape)
@@ -673,7 +672,7 @@ print('feature engineering finished!')
 ![image.png](https://upload-images.jianshu.io/upload_images/18032205-75baff2becfd6a5d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 - 删除单一特征和简化特征都是一样的目的，只不过删除单一特征是在get_dummies之后再删除了一次，删除的是独热编码特征。
 
-#####2.8 结论
+##### 2.8 结论
 ```
 X_train.to_csv('%sX_train.csv'%path)
 y_train.to_csv('%sy_train.csv'%path)
@@ -681,7 +680,7 @@ X_test.to_csv('%sX_test.csv'%path)
 ```
 - 特征工程里面最有效的步骤是异常值筛选，然后把原始的0.139的成绩提升为0.133~0.135之间
 
-###三、训练模型
+### 三、训练模型
 ```
 X_train=pd.read_csv('%sX_train.csv'%path,index_col='Id')
 y_train=pd.read_csv('%sy_train.csv'%path,index_col='Id')
@@ -692,4 +691,486 @@ def find_cv(model,X_train,y_train,param_test):
     model_cv=model_selection.GridSearchCV(model,param_test,cv=10,n_jobs=-1,scoring='neg_mean_squared_error')
     model_cv.fit(X_train,y_train)
 
-    print("model_cv.cv_results_['mean_test_score']:=
+    print("model_cv.cv_results_['mean_test_score']:=%s"%np.sqrt(-model_cv.cv_results_['mean_test_score']))  #结果是开根号值
+
+    print()
+    print(np.sqrt(-model_cv.best_score_))
+    print(model_cv.best_params_)
+```
+##### 3.1 lasso
+```
+# lasso win
+model=linear_model.Lasso(0.00037,random_state=10)
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//lasso//'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+
+#实际成绩 0.11658
+```
+##### 3.2 ridge
+```
+# ridge
+model=linear_model.Ridge(9,random_state=10)
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//ridge//'%path
+y_test_pred=model.fit(X_train,y_train).predict(X_test)
+SalePrice_pred=np.exp(y_test_pred)
+df_reg=pd.DataFrame({'Id':X_test.index,'SalePrice':SalePrice_pred2.reshape(1,-1)[0]}).set_index('Id')  #ridge模型自己怪。。生成的结果不是标准格式
+df_reg.to_csv('%stest_pred.csv'%outpath)
+#实际成绩 0.11668
+```
+##### 3.3 ela
+```
+model=linear_model.ElasticNet(0.00039,0.95,random_state=10)
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//ela//'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.11775
+```
+##### 3.4 svr
+```
+model=svm.SVR(gamma=1e-08,C=125000)
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//svr//'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.12521  
+```
+- svr C值过大，怀疑是因为数据没有进行归一化导致的。。。
+##### 3.5 GDBT
+```
+model=ensemble.GradientBoostingRegressor(
+                                max_depth=3,
+                                min_weight_fraction_leaf=0.004,
+                                min_impurity_split=0,
+                                subsample=0.82,
+                                max_features=0.45,
+                                n_estimators=480,
+                                learning_rate=0.064,
+                                random_state=10
+                                )
+# model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//gdbt//'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.13023
+```
+##### 3.6 lgbm
+```
+model=lightgbm.LGBMRegressor(random_state=10,
+                             max_depth=8,
+                             num_leaves=11,
+                             min_child_samples=20,
+                             min_child_weight=0,
+                             min_split_gain=0,
+                             subsample=0.8,
+                             colsample_bytree=0.24,
+                             subsample_freq=1,
+                             reg_alpha=0.0009,
+                             reg_lambda=0.00088,
+                             learning_rate=0.006,
+                             n_estimators=2550
+                            )
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//lgbm//'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.12411
+```
+##### 3.7 xgbt
+```
+model=xgboost.XGBRegressor(random_state=10,
+                           max_depth=6,
+                           min_child_weight=6,
+                           min_split_gain=6,
+                           subsample=0.77,
+                           colsample_bytree=0.62,
+                           reg_alpha=1e-5,
+                           reg_lambda=1, 
+                           n_estimators=150,
+                           learning_rate=0.1,
+                          )
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//xgbt//'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.12839
+```
+
+### 四、stacking
+```
+lasso=linear_model.Lasso(0.00037,random_state=10)
+ridge=linear_model.Ridge(9,random_state=10)
+ela=linear_model.ElasticNet(0.00039,0.95,random_state=10)
+svr=svm.SVR(gamma=1e-08,C=125000)
+gdbt=ensemble.GradientBoostingRegressor(
+                                max_depth=3,
+                                min_weight_fraction_leaf=0.004,
+                                min_impurity_split=0,
+                                subsample=0.82,
+                                max_features=0.45,
+                                n_estimators=480,
+                                learning_rate=0.064,
+                                random_state=10
+                                )
+lgbm=lightgbm.LGBMRegressor(random_state=10,
+                             max_depth=8,
+                             num_leaves=11,
+                             min_child_samples=20,
+                             min_child_weight=0,
+                             min_split_gain=0,
+                             subsample=0.8,
+                             colsample_bytree=0.24,
+                             subsample_freq=1,
+                             reg_alpha=0.0009,
+                             reg_lambda=0.00088,
+                             learning_rate=0.006,
+                             n_estimators=2550
+                            )
+xgbt=xgboost.XGBRegressor(random_state=10,
+                           max_depth=6,
+                           min_child_weight=6,
+                           min_split_gain=6,
+                           subsample=0.77,
+                           colsample_bytree=0.62,
+                           reg_alpha=1e-5,
+                           reg_lambda=1, 
+                           n_estimators=150,
+                           learning_rate=0.1,
+                          )
+```
+##### 4.1 第二层模型采用原始特征
+```
+reg_stack=StackingCVRegressor(regressors=lasso,meta_regressor=lasso,random_state=10,use_features_in_secondary=True)  
+param_test = {
+ 'regressors':[(lasso,ridge,ela,svr,gdbt,lgbm)],
+ 'meta_regressor':[lasso,ridge,ela,svr,gdbt,lgbm,xgbt]
+}
+
+find_cv(reg_stack,X_train,y_train,param_test)
+```
+```
+model=StackingCVRegressor(regressors=(lasso,ridge,ela,svr,gdbt,lgbm),
+                          meta_regressor=ridge,random_state=10,use_features_in_secondary=True) 
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//stack//ridge'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.11689
+```
+##### 4.2 第二层模型不采用原始特征
+第二层不采用原始特征，则meta_regressor自然也不用采用之前网格寻优得到的模型
+```
+#单模型stacking，第二层不用特征量，但是混合模型是默认模型，如果可以的话，还可以对第二层网格进行寻优
+reg_stack=StackingCVRegressor(regressors=lasso,meta_regressor=lasso,random_state=10,use_features_in_secondary=False)  
+param_test = {
+ 'regressors':[(lasso,ridge,ela,svr,gdbt,lgbm)],
+ 'meta_regressor':[linear_model.Lasso(random_state=10),
+                   linear_model.Ridge(random_state=10),
+                   linear_model.ElasticNet(random_state=10),
+                   svm.SVR(),
+                   ensemble.GradientBoostingRegressor(random_state=10),
+                   lightgbm.LGBMRegressor(random_state=10),
+                   xgboost.XGBRegressor(random_state=10)]
+}
+
+find_cv(reg_stack,X_train,y_train,param_test)
+```
+```
+model=StackingCVRegressor(regressors=(lasso,ridge,ela,svr,gdbt,lgbm),
+                          meta_regressor=ridge,random_state=10,use_features_in_secondary=True) 
+model_eval(model,X_train,y_train)
+
+#模型预测
+outpath='%s//reg//1220//stack//ridge'%path
+model_predict(model.fit(X_train,y_train),X_test,outpath)  
+#实际成绩 0.11689
+```
+
+
+### 五、blending
+```
+lasso=linear_model.Lasso(0.00037,random_state=10)
+ridge=linear_model.Ridge(9,random_state=10)
+ela=linear_model.ElasticNet(0.00039,0.95,random_state=10)
+svr=svm.SVR(gamma=1e-08,C=125000)
+gdbt=ensemble.GradientBoostingRegressor(
+                                max_depth=3,
+                                min_weight_fraction_leaf=0.004,
+                                min_impurity_split=0,
+                                subsample=0.82,
+                                max_features=0.45,
+                                n_estimators=480,
+                                learning_rate=0.064,
+                                random_state=10
+                                )
+lgbm=lightgbm.LGBMRegressor(random_state=10,
+                             max_depth=8,
+                             num_leaves=11,
+                             min_child_samples=20,
+                             min_child_weight=0,
+                             min_split_gain=0,
+                             subsample=0.8,
+                             colsample_bytree=0.24,
+                             subsample_freq=1,
+                             reg_alpha=0.0009,
+                             reg_lambda=0.00088,
+                             learning_rate=0.006,
+                             n_estimators=2550
+                            )
+xgbt=xgboost.XGBRegressor(random_state=10,
+                           max_depth=6,
+                           min_child_weight=6,
+                           min_split_gain=6,
+                           subsample=0.77,
+                           colsample_bytree=0.62,
+                           reg_alpha=1e-5,
+                           reg_lambda=1, 
+                           n_estimators=150,
+                           learning_rate=0.1,
+                          )
+stack=StackingCVRegressor(regressors=(lasso,ridge,ela,svr,gdbt,lgbm),
+                          meta_regressor=ridge,random_state=10) 
+
+```
+```
+def linear_blend_models_predict(models,X_train,y_train,X_test,coefs):
+    tmp=[np.array(model.fit(X_train,y_train).predict(X_test)).reshape(1,-1)[0] for model in models]  #ridge输出格式问题
+    tmp =[c*d for c,d in zip(coefs,tmp)]
+    pres=np.array(tmp).swapaxes(0,1) #numpy中的reshape不能用于交换维度，一开始的种种问题，皆由此来
+    pres=np.sum(pres,axis=1)
+    return pres
+
+def blend_model_eval(models,X_train,y_train,coefs,):
+    l_rmes=[]
+    kf=model_selection.KFold(10,random_state=10)
+    for train,test in kf.split(X_train):
+        X_train1 = X_train.iloc[train]
+        y_train1 = y_train.iloc[train]
+        X_test1 = X_train.iloc[test]
+        y_test1 = y_train.iloc[test]
+
+        y_pred1=linear_blend_models_predict(models,X_train1,y_train1,X_test1,coefs)
+        e=np.sqrt(metrics.mean_squared_error(y_pred1,y_test1))   #还要再转化为root值
+        l_rmes.append(e)
+    print(l_rmes)
+    print(np.mean(l_rmes))
+    print()
+    print()
+    return np.mean(l_rmes)
+def blend_model_predict(models,X_train,y_train,X_test,coefs,outpath):
+    y_test_pred=linear_blend_models_predict(models,X_train,y_train,X_test,coefs)
+    SalePrice_pred=np.floor(np.exp(y_test_pred))
+    df_reg=pd.DataFrame({'Id':X_test.index,'SalePrice':SalePrice_pred}).set_index('Id')
+    df_reg.to_csv('%stest_pred.csv'%outpath)
+```
+![image.png](https://upload-images.jianshu.io/upload_images/18032205-73b43f3dee718fc6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+##### 5.1 基础模型blend
+```
+models=[lasso,ridge,ela,svr,gdbt,lgbm,xgbt,stack]
+print('1')
+models=[lasso,ridge,ela]
+coefs=[1,1,1]/np.sum([1,1,1])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//1//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.11619
+
+print('2')
+models=[gdbt,lgbm,xgbt]
+coefs=[1,1,1]/np.sum([1,1,1])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//2//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.12502
+
+print('3')
+models=[lasso,ridge,ela,stack]
+coefs=[1,1,1,1]/np.sum([1,1,1,1])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//3//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.11605
+
+print('4')
+models=[lasso,ridge,ela,stack,lgbm,svr]
+coefs=[1,1,1,1,0.8,0.8]/np.sum([1,1,1,1,0.8,0.8])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//4//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.11604
+
+print('5')
+models=[lasso,ridge,ela,stack,lgbm,svr,xgbt]
+coefs=[1,1,1,1,0.8,0.8,0.6]/np.sum([1,1,1,1,0.8,0.8,0.6])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//5//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.11621
+
+print('6')
+models=[lasso,ridge,ela,stack,lgbm,svr,xgbt,gdbt]
+coefs=[1,1,1,1,0.8,0.8,0.6,0.5]/np.sum([1,1,1,1,0.8,0.8,0.6,0.5])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//6//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.11664
+
+print('7')
+models=[lasso,ridge,ela,stack,lgbm,svr,xgbt,gdbt]
+coefs=[1.5,1,1,1,0.8,0.8,0.6,0.3]/np.sum([1.5,1,1,1,0.8,0.8,0.6,0.3])
+blend_model_eval(models,X_train,y_train,coefs)
+
+outpath='%s//reg//1220//blend//7//'%path
+blend_model_predict(models,X_train,y_train,X_test,coefs,outpath) 
+#0.11634
+```
+![image.png](https://upload-images.jianshu.io/upload_images/18032205-84d1e9b4dbe08269.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+##### 5.2 top kernel mix
+```
+sub1=pd.read_csv('%s//reg//1220//lasso//test_pred.csv'%path).set_index('Id')
+sub2=pd.read_csv('%s//reg//1220//ridge//test_pred.csv'%path).set_index('Id')
+sub3=pd.read_csv('%s//reg//1220//stack//ridge//2//test_pred.csv'%path).set_index('Id')
+sub4=pd.read_csv('%s//reg//1220//blend//3//test_pred.csv'%path).set_index('Id')
+sub5=pd.read_csv('%s//reg//1220//blend//4//test_pred.csv'%path).set_index('Id')
+```
+```
+outpath='%s//reg//1220//blendtop//1//'%path   
+SalePrice_pred=np.floor(0.25*(sub1.SalePrice)+0.25*(sub2.SalePrice)+0.25*(sub3.SalePrice)+0.25*(sub4.SalePrice))
+df_reg=pd.DataFrame({'Id':X_test.index,'SalePrice':SalePrice_pred}).set_index('Id')
+df_reg.to_csv('%stest_pred.csv'%outpath)
+#0.11613
+
+outpath='%s//reg//1220//blendtop//2//'%path   
+SalePrice_pred=np.floor(0.2*(sub1.SalePrice)+0.2*(sub2.SalePrice)+0.2*(sub3.SalePrice)+0.2*(sub4.SalePrice)+0.2*(sub5.SalePrice))
+df_reg=pd.DataFrame({'Id':X_test.index,'SalePrice':SalePrice_pred}).set_index('Id')
+df_reg.to_csv('%stest_pred.csv'%outpath)
+#0.11601
+
+outpath='%s//reg//1220//blendtop//3//'%path   
+SalePrice_pred=np.floor(0.5*(sub4.SalePrice)+0.5*(sub5.SalePrice))
+df_reg=pd.DataFrame({'Id':X_test.index,'SalePrice':SalePrice_pred}).set_index('Id')
+df_reg.to_csv('%stest_pred.csv'%outpath)
+#0.11590
+
+outpath='%s//reg//1220//blendtop//5//'%path   
+SalePrice_pred=np.floor(0.2*(sub1.SalePrice)+0.1*(sub2.SalePrice)+0.1*(sub3.SalePrice)+0.3*(sub4.SalePrice)+0.3*(sub5.SalePrice))
+df_reg=pd.DataFrame({'Id':X_test.index,'SalePrice':SalePrice_pred}).set_index('Id')
+df_reg.to_csv('%stest_pred.csv'%outpath)
+#0.11595
+```
+
+- 历史最优成绩0.11590
+
+### 六、最后调整
+根据一些参考理论：让超低的房价更低，让超高的房价更高(通常来说，会将小者放大，大者缩小，但房价有其特殊性：有些偏远地区的房子比预测更低。但实际上并未取得更好地效果
+```
+#让超低的房价更低，让超高的房价更高(通常来说，会将小者放大，大者缩小，但房价有其特殊性：有些偏远地区的房子比预测更低，
+outpath='%s//reg//1220//submission//3//'%path   
+submission=pd.read_csv('%s//reg//1220//blendtop//2//test_pred.csv'%path).set_index('Id')
+q1 = submission['SalePrice'].quantile(0.0045) 
+q2 = submission['SalePrice'].quantile(0.998)
+submission['SalePrice'] = submission['SalePrice'].apply(lambda x: x if x > q1 else x*0.84)
+submission['SalePrice'] = submission['SalePrice'].apply(lambda x: x if x < q2 else x*1.05)
+submission.to_csv('%stest_pred.csv'%outpath)
+#0.11647
+```
+```
+x=list(range(len(y_train)))
+y1=np.exp(y_train.SalePrice).sort_values()
+y2=np.exp(y_train_pred.loc[np.exp(y_train.SalePrice).sort_values().index])
+
+sns.set()
+plt.figure(figsize=(20,12))
+plt.plot(x,y1)
+plt.plot(x,y2)
+```
+![image.png](https://upload-images.jianshu.io/upload_images/18032205-0b9115d1eabbea8f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+- 所以从训练集中可以看出，预测的结果和实际结果在末尾和订单的偏差，有大也有小，有高也有低。
+- 所以尝试用训练集自己的结果，来确定是应该增加还是减少，增加和减少的比率又是多少：
+```
+#对down进行操作,关键列表：q_down_list，coef_down_list，rmse_down_min_list
+q_down=[0]
+rmse=np.sqrt(metrics.mean_squared_error(np.log(y2),np.log(y1)))
+rmse_down_min_list=[rmse]
+q_down_list=[0]
+coef_down_list=[]
+
+y_temp=y2.copy()
+
+
+# for i in np.arange(0,0.1,0.0005):
+for i in np.arange(0,0.1,0.0005):
+    q_down.append(y2['SalePrice'].quantile(i))
+    rmse_temp=[]
+    for j in np.arange(0.3,3,0.01):
+        a = y_temp['SalePrice'].apply(lambda x: x if x >= q_down[-1] or x <= q_down[-2] else x*j)
+        rmse_temp.append(np.sqrt(metrics.mean_squared_error(np.log(a),np.log(y1))))
+    temp=rmse_temp-rmse_down_min_list[-1]
+    if temp.min()<0:
+        q_down_list.append(y2['SalePrice'].quantile(i))
+        rmse_down_min_list.append(np.array(rmse_temp).min())
+        coef_down_list.append(list(np.arange(0.3,3,0.01))[np.array(rmse_temp).argmin()])
+        y_temp['SalePrice'] = y_temp['SalePrice'].apply(lambda x: x if x >= q_down_list[-1] or x <= q_down_list[-2] else x*coef_down_list[-1])    
+        
+#对up进行操作,,关键列表：q_up_list，coef_up_list，rmse_up_min_list
+q_up=[0]
+rmse=np.sqrt(metrics.mean_squared_error(np.log(y2),np.log(y1)))
+rmse_up_min_list=[rmse]
+q_up_list=[0]
+coef_up_list=[]
+
+y_temp=y2.copy()
+
+
+# for i in np.arange(0,0.1,0.0005):
+for i in np.arange(0,0.1,0.0005):
+    q_up.append(y2['SalePrice'].quantile(1-i))
+    rmse_temp=[]
+    for j in np.arange(0.3,3,0.01):
+        a = y_temp['SalePrice'].apply(lambda x: x if x <= q_up[-1] or x >= q_up[-2] else x*j)
+        rmse_temp.append(np.sqrt(metrics.mean_squared_error(np.log(a),np.log(y1))))
+    temp=rmse_temp-rmse_up_min_list[-1]
+    if temp.min()<0:
+        q_up_list.append(y2['SalePrice'].quantile(1-i))
+        rmse_up_min_list.append(np.array(rmse_temp).min())
+        coef_up_list.append(list(np.arange(0.3,3,0.01))[np.array(rmse_temp).argmin()])
+        y_temp['SalePrice'] = y_temp['SalePrice'].apply(lambda x: x if x <= q_up_list[-1] or x >= q_up_list[-2] else x*coef_up_list[-1])    
+
+```
+```
+#调整边缘房价
+outpath='%s//reg//1220//submission//5//'%path   
+submission=pd.read_csv('%s//reg//1220//blendtop//3//test_pred.csv'%path).set_index('Id')
+
+for i in range(len(q_down_list)-1):
+    submission['SalePrice']=submission['SalePrice'].apply(lambda x: x if x >= q_down_list[i+1] or x <= q_down[i] else x*coef_down_list[i])
+submission.to_csv('%stest_pred.csv'%outpath)
+#0.12527
+```
+- 但是调整结果很不理想。。。
+
+### 七、结论
+大概从stack开始就没有起到很好的优化效果，最终结果0.1159和lasso的0.11658提升有限。。思考了一下，可能有以下几个方面还可以优化：
+
+###### 1、特征工程是基于xgbt开展的，但是针对这个问题，采用lasso更合适是吧，而且更快。。
+###### 2、在分析了相关性之后没有进行降维，有的kernel中提到如果不进行降维或者转化的话，会产生多重共线性的问题，造成模型精度下降（而且本身又是lasso更适用的问题）。所以一个方案是利用PCA进行转化（都不用降维），转化成其他相关性较小的向量；
+###### 3、在融合新特征部分，我想了一下，如果要生成融合新特征的话，也要更多的考虑重要特征啊。。所以可行方案是按feature_importance排个序，然后基于这些重要特征进行融合，如果这些重要特征中还有比较相关的量，可以加减乘除指数对数都来一遍，以然后再互相融合来一遍。。。。。
+###### 4、stack互相融合，还可以自融合（就regresser都是多个自己）。。。
